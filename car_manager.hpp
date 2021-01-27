@@ -57,8 +57,8 @@ public:
     CarManager(LightsManager *_lightsManager) {
         lightsManager = _lightsManager;
         ObjLoader objLoader;
-        carModels.push_back(objLoader.loadObj("../resources/models/car_1.fbx"));
-        carModels.push_back(objLoader.loadObj("../resources/models/car_2.fbx"));
+        carModels.push_back(objLoader.loadObj("resources/models/car_1.fbx"));
+        carModels.push_back(objLoader.loadObj("resources/models/car_2.fbx"));
         //carModels.push_back(objLoader.loadObj("../resources/models/LowPolyFiatUNO.obj"));
     }
 
@@ -73,10 +73,10 @@ public:
             car.mesh = new Mesh(carModels[model]);
             switch (model) {
                 case 0:
-                    car.mesh->addTexture("../textures/Car Texture 1.png");
+                    car.mesh->addTexture("textures/Car Texture 1.png");
                     break;
                 case 1:
-                    car.mesh->addTexture("../textures/Car Texture 2.png");
+                    car.mesh->addTexture("textures/Car Texture 2.png");
                     break;
                 case 2:
                     car.mesh->setScale({0.9, 0.9, 0.9});

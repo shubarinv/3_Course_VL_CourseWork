@@ -64,7 +64,7 @@ public:
         addNewBuffer(VertexBuffer(coordinates));// Setting VBO
         generateNormals();
         if(textures.size()==1){
-            addTexture("../textures/NoSpec.png");
+            addTexture("textures/NoSpec.png");
         }
         fillVAO();
 
