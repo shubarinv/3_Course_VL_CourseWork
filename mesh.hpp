@@ -118,6 +118,7 @@ public:
             relatedMeshes.back().compile();
         }
         model = glm::mat4(1.f);
+        setTextures(material.textures);
     }
 
     explicit Mesh(std::vector<ObjLoader::loadedOBJ> loadedOBJs) {
@@ -133,6 +134,7 @@ public:
             relatedMeshes.back().compile();
         }
         model = glm::mat4(1.f);
+       setTextures(material.textures);
     }
 
     explicit Mesh(const ObjLoader::loadedOBJ &loadedObjData) {
@@ -142,6 +144,7 @@ public:
         vao = new VertexArray;
         model = glm::mat4(1.f);
         material = loadedOBJ.material;
+        setTextures(material.textures);
     }
 
     ObjLoader::loadedOBJ loadedOBJ;

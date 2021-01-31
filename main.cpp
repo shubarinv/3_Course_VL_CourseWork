@@ -200,6 +200,8 @@ int main(int argc, char *argv[]) {
     glfwSetCursorPosCallback(app.getWindow()->getGLFWWindow(), mouse_callback);
     glfwSetScrollCallback(app.getWindow()->getGLFWWindow(), scroll_callback);
 
+    meshes.push_back(new Mesh("resources/models/10477_Satellite_v1_L3.obj"));
+    meshes.back()->setScale({0.01,0.01,0.01})->compile();
 
     while (!app.getShouldClose()) {
         app.getWindow()->updateFpsCounter();
