@@ -102,7 +102,7 @@ private:
                                                  aiProcess_SortByPType);
         // If the import failed, report it
         if (!scene) {
-            LOG_S(ERROR) << "Failed to load file: " << importer.GetErrorString();
+            LOG_S(FATAL) << "Failed to load file: " << importer.GetErrorString();
             return {};
         }
         // Now we can access the file's contents.

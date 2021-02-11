@@ -6,7 +6,6 @@
 #define CGLABS__TEXTURE_HPP_
 
 #include <utility>
-#include "libs/stb_image.h"
 #include "functions.hpp"
 
 class Texture {
@@ -36,7 +35,8 @@ public:
             }
             glGenerateMipmap(GL_TEXTURE_2D);
         } else {
-            LOG_S(WARNING) << "Failed to load texture";
+            LOG_S(WARNING) << "Failed to load texture at "+filepath;
+			std::cout<<filepath<<std::endl;
         }
         stbi_image_free(data);
         unbind();

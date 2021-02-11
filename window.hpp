@@ -101,8 +101,8 @@ class Window {
    * @brief this function attempts to load latest version of OpenGL
    */
   void bruteforceGLVersion() {
-	LOG_SCOPE_F(INFO, "Getting latest OpenGL");
-	for (int major = 4; major > 3; major--) {
+	LOG_S(INFO)<<"Getting latest OpenGL";
+	for (int major = 4; major > 2; major--) {
 	  for (int minor = 9; minor > 0; minor--) {
 		if (major == 3 & minor == 1) { return; }
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
@@ -113,6 +113,7 @@ class Window {
 		  LOG_S(INFO) << tmp << " - FAIL";
 		} else {
 		  LOG_S(INFO) << tmp << " - OK";
+		  return;
 		}
 	  }
 	}
