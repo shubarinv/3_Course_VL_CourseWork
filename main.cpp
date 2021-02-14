@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
 
   lightsManager = new LightsManager;
   lightsManager->addLight(
-	  LightsManager::DirectionalLight("sun", {40, 40, 4}, {0.1, 0.1, 0.1}, {1, 1, 1}, {1, 1, 1}));
+	  LightsManager::DirectionalLight("sun", {0, 0, 60}, {0.1, 0.1, 0.1}, {1, 1, 1}, {1, 1, 1}));
 
   // camera
   camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -197,8 +197,9 @@ int main(int argc, char *argv[]) {
   glfwSetCursorPosCallback(app.getWindow()->getGLFWWindow(), mouse_callback);
   glfwSetScrollCallback(app.getWindow()->getGLFWWindow(), scroll_callback);
 
- meshes.push_back(new Mesh("resources/models/MRO.3ds"));
-//  meshes.push_back(new Mesh("resources/models/tdrs_no_ants.3ds"));
+  meshes.push_back(new Mesh("resources/models/pahrump_print_1x.obj"));
+  meshes.back()->addScaledTexture("textures/marsTexture.jpg", {2, 2});
+  //  meshes.push_back(new Mesh("resources/models/tdrs_no_ants.3ds"));
   meshes.back()->setScale({1, 1, 1})->compile();
 
   while (!app.getShouldClose()) {
