@@ -90,7 +90,7 @@ class Window {
 	if (elapsed_seconds > 0.25) {
 	  previous_seconds = current_seconds;
 	  double fps       = (double)frame_count / elapsed_seconds;
-	  std::string tmp  =  "vhundef's courseWork @ fps: " + std::to_string(fps);
+	  std::string tmp  =  "Marcusessssss courseWork @ fps: " + std::to_string(fps);
 	  glfwSetWindowTitle(window, tmp.c_str());
 	  frame_count = 0;
 	}
