@@ -235,6 +235,9 @@ int main(int argc, char *argv[]) {
   meshes.back()->setScale({1, 1, 1})->compile();
   meshes.back()->setPosition({0, -20, 0});
 
+  meshes.push_back(new Mesh("resources/models/Rover.obj"));
+  meshes.back()->compile();
+meshes.back()->setPosition({-95, -5.5, 45})->setScale({0.1,0.1,0.1});
   meshes.push_back(new Mesh("resources/models/HDU_lowRez_part1.obj"));
   meshes.back()->compile()->setPosition({-150, -6, 25})->setScale({0.01, 0.01, 0.01});
   meshes.push_back(new Mesh("resources/models/HDU_lowRez_part1.obj"));
@@ -247,6 +250,9 @@ int main(int argc, char *argv[]) {
   meshes.back()->compile()->setPosition({-140, -4, 27})->setOrigin({-140, -4, 27})->setScale({0.01, 0.01, 0.01})->setRotation({0, 90, 0});
 
   double lasttime = glfwGetTime();
+  Mesh mro("resources/models/MRO.3ds");
+  mro.setPosition({0,400,0})->setOrigin(mro.position)->setRotation({0,0,90})->setScale({0.3,0.3,0.3});
+  mro.compile();
   while (!app.getShouldClose()) {
 	app.getWindow()->updateFpsCounter();
 	auto currentFrame = glfwGetTime();
@@ -255,28 +261,6 @@ int main(int argc, char *argv[]) {
 	moveCamera();
 	Renderer::clear({0, 0, 0, 1});
 
-	// 1. render depth of scene to texture (from light's perspective)
-	// --------------------------------------------------------------
-	glm::mat4 lightProjection, lightView;
-	glm::mat4 lightSpaceMatrix;
-	float near_plane = 0.001f, far_plane = 30.5f;
-	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	lightView = glm::lookAt(glm::vec3(-85, 10, 25),
-							glm::vec3(-95, 0, 15),
-							glm::vec3(0.0f, 1.0f, 0.0f));
-	lightSpaceMatrix = lightProjection * lightView;
-	// render scene from light's point of view
-	shader_shadow.bind();
-
-	shader_shadow.setUniformMat4f("lightSpaceMatrix", lightSpaceMatrix);
-	glm::mat4 model = glm::mat4(1.0f);
-	shader_shadow.setUniformMat4f("model", model);
-
-	glViewport(0, 0, 1024, 1024);
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	renderScene(&shader_shadow, meshes, planes);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// 2. render scene as normal using the generated depth/shadow map
 	// --------------------------------------------------------------
@@ -285,22 +269,11 @@ int main(int argc, char *argv[]) {
 	shader_tex.bind();
 	camera->passDataToShader(&shader_tex);
 	lightsManager->passDataToShader(&shader_tex);
-	shader_tex.setUniformMat4f("lightSpaceMatrix", lightSpaceMatrix);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 	//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	renderScene(&shader_tex, meshes, planes, false);
-	/*
-	shader_depth_debug.bind();
-	shader_depth_debug.setUniform1f("near_plane", near_plane);
-	shader_depth_debug.setUniform1f("far_plane", far_plane);
-	camera->passDataToShader(&shader_depth_debug);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, depthMap);
-	renderQuad(&shader_depth_debug);
-
-	LOG(INFO) << "x: " << camera->Position.x << "y: " << camera->Position.y << "z: " << camera->Position.z;
-*/
+	mro.draw(&shader_tex);
 	// draw skybox as last
 
 	glDepthFunc(GL_LEQUAL);// change depth function so depth test passes when values are equal to depth buffer's content
@@ -323,6 +296,11 @@ int main(int argc, char *argv[]) {
 	  // TODO: Put the thread to sleep, yield, or simply do nothing
 	}
 	lasttime += 1.0 / 60;
+    mro.setPosition(mro.position+glm::vec3(6,0,6))->setOrigin(mro.position);
+	if(mro.position.x>2000){
+	  mro.position.x=-2000;
+	  mro.position.z=-2000;
+	}
   }
   glfwTerminate();
   exit(EXIT_SUCCESS);
