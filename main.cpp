@@ -90,7 +90,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   camera->ProcessMouseScroll(yoffset);
 }
-void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes);
+void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes, bool shadowPass = true);
+void renderQuad(Shader *shader);
 
 int main(int argc, char *argv[]) {
   Application app({1280, 720}, argc, argv);
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
 
   lastX = app.getWindow()->getWindowSize().x / 2.0f;
   lastY = app.getWindow()->getWindowSize().y / 2.0f;
+
   // shadows stuff
   // configure depth map FBO
   // -----------------------
@@ -130,9 +132,12 @@ int main(int argc, char *argv[]) {
   glCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 
   Shader shader_shadow("shaders/shadow_shader.glsl", false);
+  ;
+
   Shader shader_tex("shaders/lighting_shader.glsl", false);
   shader_tex.bind();
   shader_tex.setUniform1i("skybox", 0);
+  shader_tex.setUniform1i("shadowMap", 1);
   shader_tex.setUniform1i("NUM_POINT_LIGHTS", 0);
   shader_tex.setUniform1i("NUM_SPOT_LIGHTS", 0);
   shader_tex.setUniform1i("NUM_DIR_LIGHTS", 0);
@@ -211,11 +216,11 @@ int main(int argc, char *argv[]) {
   unsigned int cubemapTexture = CubeMapTexture::loadCubemap(faces);
 
   lightsManager = new LightsManager;
-  lightsManager->addLight(LightsManager::DirectionalLight("sun", {0, -5, -15}, {0.1, 0.1, 0.1}, {1, 1, 1}, {1, 1, 1}));
+  lightsManager->addLight(LightsManager::DirectionalLight("sun", {0, -5, -15}, {0.1, 0.1, 0.1}, {1, 0.9, 0.7}, {1, 1, 1}));
   //lightsManager->addLight(LightsManager::SpotLight("sun",{-2.0f, 0.0f, -1.0f},{0,0,0},{0.1,0.1,0.1},{1,1,1},{1,1,1},glm::cos(glm::radians(180.f)),180,1.0f,0.09f,0.032f));
 
   // camera
-  camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+  camera = new Camera(glm::vec3(-95, 0, 35));
   camera->setWindowSize(app.getWindow()->getWindowSize());
 
   glfwSetCursorPosCallback(app.getWindow()->getGLFWWindow(), mouse_callback);
@@ -230,6 +235,16 @@ int main(int argc, char *argv[]) {
   meshes.back()->setScale({1, 1, 1})->compile();
   meshes.back()->setPosition({0, -20, 0});
 
+  meshes.push_back(new Mesh("resources/models/HDU_lowRez_part1.obj"));
+  meshes.back()->compile()->setPosition({-150, -6, 25})->setScale({0.01, 0.01, 0.01});
+  meshes.push_back(new Mesh("resources/models/HDU_lowRez_part1.obj"));
+  meshes.back()->compile()->setPosition({-150, -6, 35.3})->setOrigin({-150, -6, 35.3})->setScale({0.01, 0.01, 0.01})->setRotation({0, 90, 0});
+  meshes.push_back(new Mesh("resources/models/HDU_lowRez_part2.obj"));
+  meshes.back()->compile()->setPosition({-150, -6, 25})->setScale({0.01, 0.01, 0.01});
+  meshes.push_back(new Mesh("resources/models/Cartoon Low pOly Solar Panel.obj"));
+  meshes.back()->compile()->setPosition({-160, -4, 32})->setOrigin({-160, -4, 32})->setScale({0.01, 0.01, 0.01})->setRotation({0, 90, 0});
+  meshes.push_back(new Mesh("resources/models/Cartoon Low pOly Solar Panel.obj"));
+  meshes.back()->compile()->setPosition({-140, -4, 27})->setOrigin({-140, -4, 27})->setScale({0.01, 0.01, 0.01})->setRotation({0, 90, 0});
 
   double lasttime = glfwGetTime();
   while (!app.getShouldClose()) {
@@ -244,22 +259,22 @@ int main(int argc, char *argv[]) {
 	// --------------------------------------------------------------
 	glm::mat4 lightProjection, lightView;
 	glm::mat4 lightSpaceMatrix;
-	float near_plane = 1.0f, far_plane = 30.5f;
-	lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane);
-	lightView = glm::lookAt(glm::vec3(0, 0, 60),
-							glm::vec3(0.0f, 0.0f, 0.0f),
+	float near_plane = 0.001f, far_plane = 30.5f;
+	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	lightView = glm::lookAt(glm::vec3(-85, 10, 25),
+							glm::vec3(-95, 0, 15),
 							glm::vec3(0.0f, 1.0f, 0.0f));
 	lightSpaceMatrix = lightProjection * lightView;
 	// render scene from light's point of view
 	shader_shadow.bind();
+
 	shader_shadow.setUniformMat4f("lightSpaceMatrix", lightSpaceMatrix);
 	glm::mat4 model = glm::mat4(1.0f);
 	shader_shadow.setUniformMat4f("model", model);
 
-    glViewport(0, 0, 1024, 1024);
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glActiveTexture(GL_TEXTURE0);
+	glViewport(0, 0, 1024, 1024);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
 	renderScene(&shader_shadow, meshes, planes);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -271,10 +286,21 @@ int main(int argc, char *argv[]) {
 	camera->passDataToShader(&shader_tex);
 	lightsManager->passDataToShader(&shader_tex);
 	shader_tex.setUniformMat4f("lightSpaceMatrix", lightSpaceMatrix);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-	renderScene(&shader_tex, meshes, planes);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	renderScene(&shader_tex, meshes, planes, false);
+	/*
+	shader_depth_debug.bind();
+	shader_depth_debug.setUniform1f("near_plane", near_plane);
+	shader_depth_debug.setUniform1f("far_plane", far_plane);
+	camera->passDataToShader(&shader_depth_debug);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	renderQuad(&shader_depth_debug);
 
+	LOG(INFO) << "x: " << camera->Position.x << "y: " << camera->Position.y << "z: " << camera->Position.z;
+*/
 	// draw skybox as last
 
 	glDepthFunc(GL_LEQUAL);// change depth function so depth test passes when values are equal to depth buffer's content
@@ -293,17 +319,20 @@ int main(int argc, char *argv[]) {
 
 	glCall(glfwSwapBuffers(app.getWindow()->getGLFWWindow()));
 	glfwPollEvents();
-    while (glfwGetTime() < lasttime + 1.0/60) {
-      // TODO: Put the thread to sleep, yield, or simply do nothing
-    }
-    lasttime += 1.0/60;
+	while (glfwGetTime() < lasttime + 1.0 / 60) {
+	  // TODO: Put the thread to sleep, yield, or simply do nothing
+	}
+	lasttime += 1.0 / 60;
   }
   glfwTerminate();
   exit(EXIT_SUCCESS);
 }
-void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes) {
-  camera->passDataToShader(shader);
-  lightsManager->passDataToShader(shader);
+void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes, bool shadowPass) {
+  if (!shadowPass) {
+	camera->passDataToShader(shader);
+	lightsManager->passDataToShader(shader);
+  }
+
   //plane.draw(&shader);
   for (auto &plane : planes) {
 	plane->draw(shader);
@@ -311,4 +340,52 @@ void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *
   for (auto &mesh : meshes) {
 	mesh->draw(shader);
   }
+}
+unsigned int cubeVAO = 0;
+unsigned int cubeVBO = 0;
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad(Shader *shader) {
+  shader->bind();
+  if (quadVAO == 0) {
+	float quadVertices[] = {
+		// positions        // texture Coords
+		-1.0f,
+		1.0f,
+		0.0f,
+		0.0f,
+		1.0f,
+		-1.0f,
+		-1.0f,
+		0.0f,
+		0.0f,
+		0.0f,
+		1.0f,
+		1.0f,
+		0.0f,
+		1.0f,
+		1.0f,
+		1.0f,
+		-1.0f,
+		0.0f,
+		1.0f,
+		0.0f,
+	};
+	// setup plane VAO
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+  }
+  glBindVertexArray(quadVAO);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindVertexArray(0);
 }

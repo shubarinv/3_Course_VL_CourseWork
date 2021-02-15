@@ -80,6 +80,9 @@ class Shader {
   [[maybe_unused]] void setUniform3f(const std::string &name, glm::vec3 vec3) {
     glCall(glUniform3f(getUniformLocation(name), vec3.x, vec3.y, vec3.z));
   }
+  [[maybe_unused]] void setUniform2f(const std::string &name, glm::vec2 vec2) {
+    glCall(glUniform2f(getUniformLocation(name), vec2.x, vec2.y));
+  }
   /**
   * @brief Sets uniform with mat4
   * @param name name of the uniform
