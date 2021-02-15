@@ -31,6 +31,17 @@ public:
     };
 
     struct PointLight {
+	  /**
+	   *
+	   * @param _name ммя
+	   * @param _position местоположение
+	   * @param _ambient глобальный цвет
+	   * @param _diffuse цвет
+	   * @param _specular цвет блика
+	   * @param _constant что-то
+	   * @param _linear что-то
+	   * @param _quadratic что-то
+	   */
         PointLight(std::string _name,
                    glm::vec3 _position,
 
@@ -64,19 +75,58 @@ public:
     };
 
     struct SpotLight {
+	  /**
+	   *
+	   * @param _name имя? звание?
+	   * @param _position
+	   * @param _direction
+	   * @param _ambient
+	   * @param _diffuse
+	   * @param _specular
+	   * @param _cutoff
+	   * @param _outerCutOff
+	   * @param _constant
+	   * @param _linear
+	   * @param _quadratic
+	   */
+	  SpotLight(std::string _name,
+                glm::vec3 _position,
+                glm::vec3 _direction,
+
+                glm::vec3 _ambient,
+                glm::vec3 _diffuse,
+                glm::vec3 _specular,
+
+                float _cutoff,
+                float _outerCutOff,
+                float _constant,
+                float _linear,
+                float _quadratic){
+        name = std::move(_name);
+        position = _position;
+        direction = _direction;
+        ambient = _ambient;
+        diffuse = _diffuse;
+        specular = _specular;
+        constant = _constant;
+        linear = _linear;
+        quadratic = _quadratic;
+		cutOff=_cutoff;
+		outerCutOff=_outerCutOff;
+	  }
         std::string name;
-        glm::vec3 position;
-        glm::vec3 direction;
-        float cutOff;
-        float outerCutOff;
+        glm::vec3 position{};
+        glm::vec3 direction{};
 
-        float constant;
-        float linear;
-        float quadratic;
+        float cutOff{};
+        float outerCutOff{};
+        float constant{};
+        float linear{};
+        float quadratic{};
 
-        glm::vec3 ambient;
-        glm::vec3 diffuse;
-        glm::vec3 specular;
+        glm::vec3 ambient{};
+        glm::vec3 diffuse{};
+        glm::vec3 specular{};
     };
 private:
     std::vector<PointLight> pointLights{};
@@ -143,15 +193,15 @@ public:
     }
 
 public:
-    void addLight(PointLight pointLight) {
+    void addLight(const PointLight& pointLight) {
         pointLights.push_back(pointLight);
     }
 
-    void addLight(SpotLight spotLight) {
+    void addLight(const SpotLight& spotLight) {
         spotLights.push_back(spotLight);
     }
 
-    void addLight(DirectionalLight dirLight) {
+    void addLight(const DirectionalLight& dirLight) {
         dirLights.push_back(dirLight);
     }
 };

@@ -8,6 +8,7 @@
 #include <glm/gtx/normal.hpp>
 
 #include "functions.hpp"
+#include "renderer.hpp"
 
 class Plane {
   std::vector<Buffer> buffers{};

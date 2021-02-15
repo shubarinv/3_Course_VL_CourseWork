@@ -90,6 +90,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   camera->ProcessMouseScroll(yoffset);
 }
+void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes);
 
 int main(int argc, char *argv[]) {
   Application app({1280, 720}, argc, argv);
@@ -103,12 +104,35 @@ int main(int argc, char *argv[]) {
 
   lastX = app.getWindow()->getWindowSize().x / 2.0f;
   lastY = app.getWindow()->getWindowSize().y / 2.0f;
+  // shadows stuff
+  // configure depth map FBO
+  // -----------------------
+  const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+  unsigned int depthMapFBO;
+  glGenFramebuffers(1, &depthMapFBO);
+  // create depth texture
+  unsigned int depthMap;
+  glGenTextures(1, &depthMap);
+  glBindTexture(GL_TEXTURE_2D, depthMap);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  // attach depth texture as FBO's depth buffer
+  glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  glDepthFunc(GL_LESS);
+  // end of shadows related stuff
   glCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 
+  Shader shader_shadow("shaders/shadow_shader.glsl", false);
   Shader shader_tex("shaders/lighting_shader.glsl", false);
   shader_tex.bind();
+  shader_tex.setUniform1i("skybox", 0);
   shader_tex.setUniform1i("NUM_POINT_LIGHTS", 0);
   shader_tex.setUniform1i("NUM_SPOT_LIGHTS", 0);
   shader_tex.setUniform1i("NUM_DIR_LIGHTS", 0);
@@ -187,8 +211,8 @@ int main(int argc, char *argv[]) {
   unsigned int cubemapTexture = CubeMapTexture::loadCubemap(faces);
 
   lightsManager = new LightsManager;
-  lightsManager->addLight(
-	  LightsManager::DirectionalLight("sun", {0, 0, 60}, {0.1, 0.1, 0.1}, {1, 1, 1}, {1, 1, 1}));
+  lightsManager->addLight(LightsManager::DirectionalLight("sun", {0, -5, -15}, {0.1, 0.1, 0.1}, {1, 1, 1}, {1, 1, 1}));
+  //lightsManager->addLight(LightsManager::SpotLight("sun",{-2.0f, 0.0f, -1.0f},{0,0,0},{0.1,0.1,0.1},{1,1,1},{1,1,1},glm::cos(glm::radians(180.f)),180,1.0f,0.09f,0.032f));
 
   // camera
   camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -197,11 +221,17 @@ int main(int argc, char *argv[]) {
   glfwSetCursorPosCallback(app.getWindow()->getGLFWWindow(), mouse_callback);
   glfwSetScrollCallback(app.getWindow()->getGLFWWindow(), scroll_callback);
 
+  meshes.push_back(new Mesh("resources/models/Starship.obj"));
+  meshes.back()->addTexture("textures/Starship_Base_Color.png")->compile();
+  meshes.back()->setScale({0.005, 0.005, 0.005})->compile();
+  meshes.back()->setPosition({-95, -5, 15});
   meshes.push_back(new Mesh("resources/models/pahrump_print_1x.obj"));
   meshes.back()->addScaledTexture("textures/marsTexture.jpg", {2, 2});
-  //  meshes.push_back(new Mesh("resources/models/tdrs_no_ants.3ds"));
   meshes.back()->setScale({1, 1, 1})->compile();
+  meshes.back()->setPosition({0, -20, 0});
 
+
+  double lasttime = glfwGetTime();
   while (!app.getShouldClose()) {
 	app.getWindow()->updateFpsCounter();
 	auto currentFrame = glfwGetTime();
@@ -210,19 +240,44 @@ int main(int argc, char *argv[]) {
 	moveCamera();
 	Renderer::clear({0, 0, 0, 1});
 
+	// 1. render depth of scene to texture (from light's perspective)
+	// --------------------------------------------------------------
+	glm::mat4 lightProjection, lightView;
+	glm::mat4 lightSpaceMatrix;
+	float near_plane = 1.0f, far_plane = 30.5f;
+	lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane);
+	lightView = glm::lookAt(glm::vec3(0, 0, 60),
+							glm::vec3(0.0f, 0.0f, 0.0f),
+							glm::vec3(0.0f, 1.0f, 0.0f));
+	lightSpaceMatrix = lightProjection * lightView;
+	// render scene from light's point of view
+	shader_shadow.bind();
+	shader_shadow.setUniformMat4f("lightSpaceMatrix", lightSpaceMatrix);
+	glm::mat4 model = glm::mat4(1.0f);
+	shader_shadow.setUniformMat4f("model", model);
+
+    glViewport(0, 0, 1024, 1024);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glActiveTexture(GL_TEXTURE0);
+	renderScene(&shader_shadow, meshes, planes);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// 2. render scene as normal using the generated depth/shadow map
+	// --------------------------------------------------------------
+	glViewport(0, 0, app.getWindow()->getWindowSize().x, app.getWindow()->getWindowSize().y);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	shader_tex.bind();
 	camera->passDataToShader(&shader_tex);
 	lightsManager->passDataToShader(&shader_tex);
-	//plane.draw(&shader_tex);
-	for (auto &plane : planes) {
-	  plane->draw(&shader_tex);
-	}
-	for (auto &mesh : meshes) {
-	  mesh->draw(&shader_tex);
-	}
+	shader_tex.setUniformMat4f("lightSpaceMatrix", lightSpaceMatrix);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+	renderScene(&shader_tex, meshes, planes);
 
 	// draw skybox as last
-	glDepthFunc(
-		GL_LEQUAL);// change depth function so depth test passes when values are equal to depth buffer's content
+
+	glDepthFunc(GL_LEQUAL);// change depth function so depth test passes when values are equal to depth buffer's content
 	shader_skybox.bind();
 	shader_skybox.setUniform1f("intensity", 1);
 	auto view = glm::mat4(glm::mat3(camera->GetViewMatrix()));// remove translation from the view matrix
@@ -238,7 +293,22 @@ int main(int argc, char *argv[]) {
 
 	glCall(glfwSwapBuffers(app.getWindow()->getGLFWWindow()));
 	glfwPollEvents();
+    while (glfwGetTime() < lasttime + 1.0/60) {
+      // TODO: Put the thread to sleep, yield, or simply do nothing
+    }
+    lasttime += 1.0/60;
   }
   glfwTerminate();
   exit(EXIT_SUCCESS);
+}
+void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes) {
+  camera->passDataToShader(shader);
+  lightsManager->passDataToShader(shader);
+  //plane.draw(&shader);
+  for (auto &plane : planes) {
+	plane->draw(shader);
+  }
+  for (auto &mesh : meshes) {
+	mesh->draw(shader);
+  }
 }
