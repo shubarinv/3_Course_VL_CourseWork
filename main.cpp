@@ -216,43 +216,17 @@ int main(int argc, char *argv[]) {
   unsigned int cubemapTexture = CubeMapTexture::loadCubemap(faces);
 
   lightsManager = new LightsManager;
-  lightsManager->addLight(LightsManager::DirectionalLight("sun", {0, -5, -15}, {0.1, 0.1, 0.1}, {1, 0.9, 0.7}, {1, 1, 1}));
-  //lightsManager->addLight(LightsManager::SpotLight("sun",{-2.0f, 0.0f, -1.0f},{0,0,0},{0.1,0.1,0.1},{1,1,1},{1,1,1},glm::cos(glm::radians(180.f)),180,1.0f,0.09f,0.032f));
+  lightsManager->addLight(LightsManager::DirectionalLight("sun", {0, 0, 0}, {0.1, 0.1, 0.1}, {1, 0.9, 0.7}, {1, 1, 1}));
 
   // camera
-  camera = new Camera(glm::vec3(-95, 0, 35));
+  camera = new Camera(glm::vec3(0, 1, 0));
   camera->setWindowSize(app.getWindow()->getWindowSize());
 
   glfwSetCursorPosCallback(app.getWindow()->getGLFWWindow(), mouse_callback);
   glfwSetScrollCallback(app.getWindow()->getGLFWWindow(), scroll_callback);
 
-  meshes.push_back(new Mesh("resources/models/Starship.obj"));
-  meshes.back()->addTexture("textures/Starship_Base_Color.png")->compile();
-  meshes.back()->setScale({0.005, 0.005, 0.005})->compile();
-  meshes.back()->setPosition({-95, -5, 15});
-  meshes.push_back(new Mesh("resources/models/pahrump_print_1x.obj"));
-  meshes.back()->addScaledTexture("textures/marsTexture.jpg", {2, 2});
-  meshes.back()->setScale({1, 1, 1})->compile();
-  meshes.back()->setPosition({0, -20, 0});
-
-  meshes.push_back(new Mesh("resources/models/Rover.obj"));
-  meshes.back()->compile();
-meshes.back()->setPosition({-95, -5.5, 45})->setScale({0.1,0.1,0.1});
-  meshes.push_back(new Mesh("resources/models/HDU_lowRez_part1.obj"));
-  meshes.back()->compile()->setPosition({-150, -6, 25})->setScale({0.01, 0.01, 0.01});
-  meshes.push_back(new Mesh("resources/models/HDU_lowRez_part1.obj"));
-  meshes.back()->compile()->setPosition({-150, -6, 35.3})->setOrigin({-150, -6, 35.3})->setScale({0.01, 0.01, 0.01})->setRotation({0, 90, 0});
-  meshes.push_back(new Mesh("resources/models/HDU_lowRez_part2.obj"));
-  meshes.back()->compile()->setPosition({-150, -6, 25})->setScale({0.01, 0.01, 0.01});
-  meshes.push_back(new Mesh("resources/models/Cartoon Low pOly Solar Panel.obj"));
-  meshes.back()->compile()->setPosition({-160, -4, 32})->setOrigin({-160, -4, 32})->setScale({0.01, 0.01, 0.01})->setRotation({0, 90, 0});
-  meshes.push_back(new Mesh("resources/models/Cartoon Low pOly Solar Panel.obj"));
-  meshes.back()->compile()->setPosition({-140, -4, 27})->setOrigin({-140, -4, 27})->setScale({0.01, 0.01, 0.01})->setRotation({0, 90, 0});
-
   double lasttime = glfwGetTime();
-  Mesh mro("resources/models/MRO.3ds");
-  mro.setPosition({0,400,0})->setOrigin(mro.position)->setRotation({0,0,90})->setScale({0.3,0.3,0.3});
-  mro.compile();
+
   while (!app.getShouldClose()) {
 	app.getWindow()->updateFpsCounter();
 	auto currentFrame = glfwGetTime();
@@ -260,21 +234,12 @@ meshes.back()->setPosition({-95, -5.5, 45})->setScale({0.1,0.1,0.1});
 	lastFrame = currentFrame;
 	moveCamera();
 	Renderer::clear({0, 0, 0, 1});
-
-
-	// 2. render scene as normal using the generated depth/shadow map
-	// --------------------------------------------------------------
 	glViewport(0, 0, app.getWindow()->getWindowSize().x, app.getWindow()->getWindowSize().y);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shader_tex.bind();
 	camera->passDataToShader(&shader_tex);
 	lightsManager->passDataToShader(&shader_tex);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, depthMap);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 	renderScene(&shader_tex, meshes, planes, false);
-	mro.draw(&shader_tex);
-	// draw skybox as last
 
 	glDepthFunc(GL_LEQUAL);// change depth function so depth test passes when values are equal to depth buffer's content
 	shader_skybox.bind();
@@ -296,11 +261,6 @@ meshes.back()->setPosition({-95, -5.5, 45})->setScale({0.1,0.1,0.1});
 	  // TODO: Put the thread to sleep, yield, or simply do nothing
 	}
 	lasttime += 1.0 / 60;
-    mro.setPosition(mro.position+glm::vec3(6,0,6))->setOrigin(mro.position);
-	if(mro.position.x>2000){
-	  mro.position.x=-2000;
-	  mro.position.z=-2000;
-	}
   }
   glfwTerminate();
   exit(EXIT_SUCCESS);
@@ -310,7 +270,6 @@ void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *
 	camera->passDataToShader(shader);
 	lightsManager->passDataToShader(shader);
   }
-
   //plane.draw(&shader);
   for (auto &plane : planes) {
 	plane->draw(shader);
@@ -318,52 +277,4 @@ void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *
   for (auto &mesh : meshes) {
 	mesh->draw(shader);
   }
-}
-unsigned int cubeVAO = 0;
-unsigned int cubeVBO = 0;
-
-// renderQuad() renders a 1x1 XY quad in NDC
-// -----------------------------------------
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad(Shader *shader) {
-  shader->bind();
-  if (quadVAO == 0) {
-	float quadVertices[] = {
-		// positions        // texture Coords
-		-1.0f,
-		1.0f,
-		0.0f,
-		0.0f,
-		1.0f,
-		-1.0f,
-		-1.0f,
-		0.0f,
-		0.0f,
-		0.0f,
-		1.0f,
-		1.0f,
-		0.0f,
-		1.0f,
-		1.0f,
-		1.0f,
-		-1.0f,
-		0.0f,
-		1.0f,
-		0.0f,
-	};
-	// setup plane VAO
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
-  }
-  glBindVertexArray(quadVAO);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glBindVertexArray(0);
 }
