@@ -88,7 +88,8 @@ class Plane {
 		textures[i]->bind(i);
 	  }
 	}
-
+    shader->bind();
+    shader->setUniformMat4f("model", model);
 	Renderer::draw(vao, shader, coordinates.size() / 3, GL_TRIANGLES);
 	return this;
   }

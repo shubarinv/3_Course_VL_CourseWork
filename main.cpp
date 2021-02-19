@@ -184,6 +184,12 @@ int main(int argc, char *argv[]) {
   //floor
   planes.push_back(new Plane({6, 0, 6}, {6, 0, -17.5}, {-42.5, 0, -17.5}, {-42.5, 0, 6}));
 
+  //texts
+  planes.push_back(new Plane({-4, 1.5, 5.99}, {-4, 0.5, 5.99},{-3, 0.5, 5.99}, {-3, 1.5, 5.99}));
+  planes.back()->addTexture("textures/text.bmp");
+  planes.push_back(new Plane( {-6, 0.5, -17.499},{-6, 1.5, -17.499}, {-5, 1.5, -17.499},{-5, 0.5, -17.499}));
+  planes.back()->addTexture("textures/text.bmp")->setOrigin({-5.5,1,-17.499})->setRotation({0,0,180});
+
   //crates
   meshes.push_back(new Mesh("resources/models/Crate1.obj"));
   meshes.back()->setScale({0.5, 0.5, 0.5})->setPosition({5, 0.5, -3})->addTexture("textures/wood2.bmp");
@@ -202,7 +208,7 @@ int main(int argc, char *argv[]) {
   meshes.push_back(new Mesh("resources/models/cylinder.obj"));
   meshes.back()->setScale({0.5, 1, 0.5})->setPosition({5.4, 0, 5.2})->addTexture("textures/metal.bmp");
   meshes.push_back(new Mesh(meshes[meshes.size() - 1]->loadedOBJ));
-  meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({-5.3, 0, -16.7});
+  meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({-20, 0, -16.7});
 
   meshes.push_back(new Mesh(meshes[meshes.size() - 2]->loadedOBJ));
   meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({5.3, 0, -16.7});
