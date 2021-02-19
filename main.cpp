@@ -160,12 +160,20 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({-28, 0, -0.5}, {-28, 2, -0.5}, {-28, 2, 0}, {-28, 0, 0}));      //wall 5
   planes.push_back(new Plane({-28, 0, 0}, {-28, 2, 0}, {-18, 2, 0}, {-18, 0, 0}));            //wall 5
 
+  // inner room 4
+
+  planes.push_back(new Plane({-30, 0, -11.5}, {-30, 2, -11.5}, {-30, 2, -9.5}, {-30, 0, -9.5}));        //wall 1
+  planes.push_back(new Plane({-30, 0, -9.5}, {-30, 2, -9.5}, {-33, 2, -7.5}, {-33, 0, -7.5}));          //wall 2
+  planes.push_back(new Plane({-33, 0, -7.5}, {-33, 2, -7.5}, {-36.5, 2, -7.5}, {-36.5, 0, -7.5}));      //wall 3
+  planes.push_back(new Plane({-36.5, 0, -7.5}, {-36.5, 2, -7.5}, {-36.5, 2, -11.5}, {-36.5, 0, -11.5}));//wall 4
+  planes.push_back(new Plane({-36.5, 0, -11.5}, {-36.5, 2, -11.5}, {-30, 2, -11.5}, {-30, 0, -11.5}));  //wall 5
+
   // inner room 5
   planes.push_back(new Plane({-30, 0, 0}, {-30, 2, 0}, {-30, 2, -1.5}, {-30, 0, -1.5}));      //wall 1
   planes.push_back(new Plane({-30, 0, -1.5}, {-30, 2, -1.5}, {-33, 2, -4.5}, {-33, 0, -4.5}));//wall 2
   planes.push_back(new Plane({-33, 0, -4.5}, {-33, 2, -4.5}, {-36, 2, -4.5}, {-36, 0, -4.5}));//wall 3
   planes.push_back(new Plane({-36, 0, -4.5}, {-36, 2, -4.5}, {-36, 2, 0}, {-36, 0, 0}));      //wall 4
-  planes.push_back(new Plane({-36, 0, 0}, {-36, 2, 0}, {-30, 2, 0}, {-30, 0, 0}));      //wall 5
+  planes.push_back(new Plane({-36, 0, 0}, {-36, 2, 0}, {-30, 2, 0}, {-30, 0, 0}));            //wall 5
 
   for (auto &plain : planes) {
 	plain->compile();
