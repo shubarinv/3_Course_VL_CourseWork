@@ -4,12 +4,18 @@
 layout(location=0)in vec4 position;
 layout(location=2)in vec2 texCoord;
 
-uniform mat4 u_MVP;
+out vec3 FragPos;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+
 
 out vec2 v_TexCoord;
 
 void main(){
-    gl_Position =u_MVP*position;
+    FragPos = vec3(model * position);
+    gl_Position = projection * view * vec4(FragPos, 1.0);
     v_TexCoord =vec2(texCoord.x, 1-texCoord.y);
 }
 

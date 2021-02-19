@@ -182,10 +182,42 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({-42.5, 0, -17.5}, {-42.5, 2, -17.5}, {6, 2, -17.5}, {6, 0, -17.5}));//wall top
 
   //floor
-  planes.push_back(new Plane({6, 0, 6}, {6, 0, -17.5},  {-42.5, 0, -17.5},{-42.5, 0, 6}));
+  planes.push_back(new Plane({6, 0, 6}, {6, 0, -17.5}, {-42.5, 0, -17.5}, {-42.5, 0, 6}));
+
+  //crates
+  meshes.push_back(new Mesh("resources/models/Crate1.obj"));
+  meshes.back()->setScale({0.5, 0.5, 0.5})->setPosition({5, 0.5, -3})->addTexture("textures/wood2.bmp");
+  meshes.push_back(new Mesh(meshes.back()->loadedOBJ));
+  meshes.back()->setTextures(meshes[0]->getTextures())->setScale({0.5, 0.5, 0.5})->setPosition({5, 0.5, -5});
+  meshes.push_back(new Mesh(meshes[0]->loadedOBJ));
+  meshes.back()->setTextures(meshes[0]->getTextures())->setScale({0.5, 0.5, 0.5})->setPosition({5, 0.5, -7});
+  meshes.push_back(new Mesh(meshes[0]->loadedOBJ));
+  meshes.back()->setTextures(meshes[0]->getTextures())->setScale({0.6, 0.6, 0.6})->setPosition({-13, 0.6, -16.7});
+
+  //wall or smth idk
+  meshes.push_back(new Mesh(meshes[0]->loadedOBJ));
+  meshes.back()->setTextures(meshes[0]->getTextures())->setScale({0.1, 1, 3})->setPosition({0, 1, -5});
+
+  //pipes
+  meshes.push_back(new Mesh("resources/models/cylinder.obj"));
+  meshes.back()->setScale({0.5, 1, 0.5})->setPosition({5.4, 0, 5.2})->addTexture("textures/metal.bmp");
+  meshes.push_back(new Mesh(meshes[meshes.size() - 1]->loadedOBJ));
+  meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({-5.3, 0, -16.7});
+
+  meshes.push_back(new Mesh(meshes[meshes.size() - 2]->loadedOBJ));
+  meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({5.3, 0, -16.7});
+
+  meshes.push_back(new Mesh(meshes[meshes.size() - 3]->loadedOBJ));
+  meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({-41.7, 0, -16.7});
+
+  meshes.push_back(new Mesh(meshes[meshes.size() - 4]->loadedOBJ));
+  meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({-41.7, 0, 5.2});
 
   for (auto &plain : planes) {
 	plain->compile();
+  }
+  for (auto &mesh : meshes) {
+	mesh->compile();
   }
   while (!app.getShouldClose()) {
 	app.getWindow()->updateFpsCounter();
@@ -197,7 +229,7 @@ int main(int argc, char *argv[]) {
 
 	Renderer::clear({0, 0, 0, 1});
 	shader.bind();
-	shader.setUniformMat4f("u_MVP", camera->getMVP());
+	camera->passDataToShader(&shader);
 	renderScene(&shader, meshes, planes);
 
 	glCall(glfwSwapBuffers(app.getWindow()->getGLFWWindow()));
