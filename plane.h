@@ -43,7 +43,7 @@ class Plane {
   bool texCoordsIgnoreScale = false;
 
  public:
-  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale = {1, 1, 1}, bool _texCoordsIgnoreScale = false) {
+  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale, bool _texCoordsIgnoreScale=false) {
 	coordinates = vec3ArrayToFloatArray({a1, a2, b1, b1, b2, a1});
 
 	vao = new VertexArray;
@@ -51,7 +51,14 @@ class Plane {
 	setScale(scale);
 	texCoordsIgnoreScale = _texCoordsIgnoreScale;
   }
-  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale = {1, 1, 1}, glm::vec2 _texScale = {1, 1}) {
+  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2) {
+    coordinates = vec3ArrayToFloatArray({a1, a2, b1, b1, b2, a1});
+    vao = new VertexArray;
+    model = glm::mat4(1.f);
+    setScale({1,1,1});
+    texCoordsIgnoreScale = true;
+  }
+  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale , glm::vec2 _texScale) {
 	coordinates = vec3ArrayToFloatArray({a1, a2, b1, b1, b2, a1});
 
 	vao = new VertexArray;
@@ -67,8 +74,8 @@ class Plane {
 	}
 	addNewBuffer(VertexBuffer(coordinates));// Setting VBO
 	generateNormals();
-	if (textures.size() == 1) {
-	  addTexture("textures/NoSpec.png");
+	if(textures.size()==0){
+	  addTexture("textures/noTexture.png");
 	}
 	fillVAO();
 
@@ -76,15 +83,7 @@ class Plane {
   }
 
   Plane *draw(Shader *shader) {
-	shader->setUniformMat4f("model", model);
-
-	shader->setUniform1f("material.shininess", 10);
-
 	if (!textures.empty()) {
-	  shader->setUniform1i("material.diffuse", 0);
-	  if (textures.size() == 2) {
-		shader->setUniform1i("material.specular", 1);
-	  }
 	  for (int i = 0; i < textures.size(); ++i) {
 		textures[i]->bind(i);
 	  }
@@ -125,7 +124,7 @@ class Plane {
 	return this;
   }
 
-  Plane *setNormals(const std::vector<float> &normals) {
+  [[maybe_unused]] Plane *setNormals(const std::vector<float> &normals) {
 	addNewBuffer(NormalsBuffer(normals), true);
 	return this;
   }
@@ -134,7 +133,6 @@ class Plane {
 	addNewBuffer(TextureBuffer(textureCoords), true);
 	return this;
   }
-
  private:
   Plane *addNewBuffer(Buffer _buffer, bool bReplace = false) {
 	bool wasReplaced = false;

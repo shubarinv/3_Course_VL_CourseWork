@@ -7,9 +7,6 @@
 #include "cube_map_texture.hpp"
 #include "lights_manager.hpp"
 #include "mesh.hpp"
-#include "plane.h"
-#include "renderer.hpp"
-#include "shader.hpp"
 
 LightsManager *lightsManager;
 float lastX = 0;
@@ -22,7 +19,7 @@ Camera *camera;
 int pressedKey = -1;
 
 template<typename Numeric, typename Generator = std::mt19937>
-Numeric random(Numeric from, Numeric to) {
+[[maybe_unused]] Numeric random(Numeric from, Numeric to) {
   thread_local static Generator gen(std::random_device{}());
 
   using dist_type = typename std::conditional<
@@ -33,7 +30,7 @@ Numeric random(Numeric from, Numeric to) {
   return dist(gen, typename dist_type::param_type{from, to});
 }
 
-std::vector<glm::vec3> getCoordsForVertices(double xc, double yc, double size, int n) {
+[[maybe_unused]] std::vector<glm::vec3> getCoordsForVertices(double xc, double yc, double size, int n) {
   std::vector<glm::vec3> vertices;
   auto xe = xc + size;
   auto ye = yc;
@@ -69,7 +66,7 @@ void moveCamera() {
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+void mouse_callback([[maybe_unused]] GLFWwindow *window, double xpos, double ypos) {
   if (firstMouse) {
 	lastX = (float)xpos;
 	lastY = (float)ypos;
@@ -87,11 +84,10 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double xoffset, double yoffset) {
   camera->ProcessMouseScroll(yoffset);
 }
-void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes, bool shadowPass = true);
-void renderQuad(Shader *shader);
+void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes);
 
 int main(int argc, char *argv[]) {
   Application app({1280, 720}, argc, argv);
@@ -106,44 +102,14 @@ int main(int argc, char *argv[]) {
   lastX = app.getWindow()->getWindowSize().x / 2.0f;
   lastY = app.getWindow()->getWindowSize().y / 2.0f;
 
-  // shadows stuff
-  // configure depth map FBO
-  // -----------------------
-  const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-  unsigned int depthMapFBO;
-  glGenFramebuffers(1, &depthMapFBO);
-  // create depth texture
-  unsigned int depthMap;
-  glGenTextures(1, &depthMap);
-  glBindTexture(GL_TEXTURE_2D, depthMap);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  // attach depth texture as FBO's depth buffer
-  glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  // end of shadows related stuff
   glCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 
-  Shader shader_tex("shaders/lighting_shader.glsl", false);
-  shader_tex.bind();
-  shader_tex.setUniform1i("NUM_POINT_LIGHTS", 0);
-  shader_tex.setUniform1i("NUM_SPOT_LIGHTS", 0);
-  shader_tex.setUniform1i("NUM_DIR_LIGHTS", 0);
+  Shader shader("shaders/simple_shader.glsl", false);
+  shader.bind();
+  shader.setUniform1i("u_Texture", 0);
 
   std::vector<Mesh *> meshes;
-
   std::vector<Plane *> planes;
-
-
-  lightsManager = new LightsManager;
-  lightsManager->addLight(LightsManager::DirectionalLight("sun", {0, 0, 0}, {0.1, 0.1, 0.1}, {1, 0.9, 0.7}, {1, 1, 1}));
 
   // camera
   camera = new Camera(glm::vec3(0, 1, 0));
@@ -154,20 +120,54 @@ int main(int argc, char *argv[]) {
 
   double lasttime = glfwGetTime();
 
+  // inner  room 1
+  planes.push_back(new Plane({0, 0, 0}, {0, 2, 0}, {0, 2, -1}, {0, 0, -1}));                //wall 1
+  planes.push_back(new Plane({0, 0, -1}, {0, 2, -1}, {-2, 2, -1}, {-2, 0, -1}));            //wall 2
+  planes.push_back(new Plane({-2, 0, -1}, {-2, 2, -1}, {-2, 2, -9}, {-2, 0, -9}));          //wall 3
+  planes.push_back(new Plane({-2, 0, -9}, {-2, 2, -9}, {0, 2, -9}, {0, 0, -9}));            //wall 4
+  planes.push_back(new Plane({0, 0, -9}, {0, 2, -9}, {0, 2, -10.5}, {0, 0, -10.5}));        //wall 5
+  planes.push_back(new Plane({0, 0, -10.5}, {0, 2, -10.5}, {-6, 2, -10.5}, {-6, 0, -10.5}));//wall 6
+  planes.push_back(new Plane({-6, 0, -10.5}, {-6, 2, -10.5}, {-6, 2, -7}, {-6, 0, -7}));    //wall 7
+  planes.push_back(new Plane({-6, 0, -7}, {-6, 2, -7}, {-10, 2, -7}, {-10, 0, -7}));        //wall 8
+  planes.push_back(new Plane({-10, 0, -7}, {-10, 2, -7}, {-10, 2, -4}, {-10, 0, -4}));      //wall 9
+  planes.push_back(new Plane({-10, 0, -4}, {-10, 2, -4}, {-16, 2, -4}, {-16, 0, -4}));      //wall 10
+  planes.push_back(new Plane({-16, 0, -4}, {-16, 2, -4}, {-16, 2, 0}, {-16, 0, 0}));        //wall 11
+  planes.push_back(new Plane({-16, 0, 0}, {-16, 2, 0}, {-6, 2, 0}, {-6, 0, 0}));            //wall 12
+  planes.push_back(new Plane({-4.5, 0, 0}, {-4.5, 2, 0}, {0, 2, 0}, {0, 0, 0}));            //wall 13
+
+  // inner room 2
+  planes.push_back(new Plane({-8, 0, -10.5}, {-8, 2, -10.5}, {-8, 2, -9}, {-8, 0, -9}));          //wall 1
+  planes.push_back(new Plane({-8, 0, -9}, {-8, 2, -9}, {-12.5, 2, -9}, {-12.5, 0, -9}));          //wall 2
+  planes.push_back(new Plane({-12.5, 0, -9}, {-12.5, 2, -9}, {-12.5, 2, -5.5}, {-12.5, 0, -5.5}));//wall 3
+  planes.push_back(new Plane({-12.5, 0, -5.5}, {-12.5, 2, -5.5}, {-18, 2, -5.5}, {-18, 0, -5.5}));//wall 4
+  planes.push_back(new Plane({-18, 0, -5.5}, {-18, 2, -5.5}, {-18, 2, -3}, {-18, 0, -3}));        //wall 5
+  planes.push_back(new Plane({-18, 0, -3}, {-18, 2, -3}, {-21, 2, -3}, {-21, 0, -3}));            //wall 6
+  planes.push_back(new Plane({-21, 0, -3}, {-21, 2, -3}, {-21, 2, -5.5}, {-21, 0, -5.5}));        //wall 7
+  planes.push_back(new Plane({-21, 0, -5.5}, {-21, 2, -5.5}, {-24, 2, -5.5}, {-24, 0, -5.5}));    //wall 8
+  planes.push_back(new Plane({-24, 0, -5.5}, {-24, 2, -5.5}, {-26, 2, -9}, {-26, 0, -9}));        //wall 9
+  planes.push_back(new Plane({-26, 0, -9}, {-26, 2, -9}, {-26, 2, -11}, {-26, 0, -11}));          //wall 10
+  planes.push_back(new Plane({-26, 0, -11}, {-26, 2, -11}, {-25, 2, -11}, {-25, 0, -11}));        //wall 11
+  planes.push_back(new Plane({-25, 0, -11}, {-25, 2, -11}, {-25, 2, -9}, {-25, 0, -9}));          //wall 12
+  planes.push_back(new Plane({-25, 0, -9}, {-25, 2, -9}, {-14, 2, -9}, {-14, 0, -9}));            //wall 13
+  planes.push_back(new Plane({-14, 0, -9}, {-14, 2, -9}, {-14, 2, -10.5}, {-14, 0, -10.5}));      //wall 13
+  planes.push_back(new Plane({-8, 0, -10.5}, {-8, 2, -10.5}, {-14, 2, -10.5}, {-14, 0, -10.5}));  //wall 15
+
+  // inner room 3
+  for (auto &plain : planes) {
+	plain->compile();
+  }
   while (!app.getShouldClose()) {
 	app.getWindow()->updateFpsCounter();
+
 	auto currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
 	moveCamera();
-	Renderer::clear({0, 0, 0, 1});
-	glViewport(0, 0, app.getWindow()->getWindowSize().x, app.getWindow()->getWindowSize().y);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	shader_tex.bind();
-	camera->passDataToShader(&shader_tex);
-	lightsManager->passDataToShader(&shader_tex);
-	renderScene(&shader_tex, meshes, planes, false);
 
+	Renderer::clear({0, 0, 0, 1});
+	shader.bind();
+	shader.setUniformMat4f("u_MVP", camera->getMVP());
+	renderScene(&shader, meshes, planes);
 
 	glCall(glfwSwapBuffers(app.getWindow()->getGLFWWindow()));
 	glfwPollEvents();
@@ -179,12 +179,7 @@ int main(int argc, char *argv[]) {
   glfwTerminate();
   exit(EXIT_SUCCESS);
 }
-void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes, bool shadowPass) {
-  if (!shadowPass) {
-	camera->passDataToShader(shader);
-	lightsManager->passDataToShader(shader);
-  }
-  //plane.draw(&shader);
+void renderScene(Shader *shader, std::vector<Mesh *> meshes, std::vector<Plane *> planes) {
   for (auto &plane : planes) {
 	plane->draw(shader);
   }

@@ -6,8 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
-#include "shader.hpp"
 
+#include "shader.hpp"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -33,7 +33,7 @@ class Camera {
   glm::vec3 Up{};
   glm::vec3 Right{};
   glm::vec3 WorldUp{};
-  glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+  glm::mat4 model = glm::mat4(1.0f);// make sure to initialize matrix to identity matrix first
   // euler Angles
   float Yaw;
   float Pitch;
@@ -115,7 +115,7 @@ class Camera {
   }
 
   void passDataToShader(Shader* shader) const {
-      shader->bind();
+	shader->bind();
 	// pass projection matrix to shader (note that in this case it could change every frame)
 	glm::mat4 projection = glm::perspective(glm::radians(Zoom), (float)windowSize.x / (float)windowSize.y, 0.1f, 1000.0f);
 	shader->setUniformMat4f("projection", projection);
@@ -124,15 +124,16 @@ class Camera {
 	shader->setUniformMat4f("view", GetViewMatrix());
 	shader->setUniformMat4f("model", model);
 	shader->setUniform3f("viewPos", Position);
-
   }
   void setWindowSize(glm::vec2 _windowSize) {
 	windowSize = _windowSize;
   }
-  [[nodiscard]] glm::mat4 getProjection() const{
-     return glm::perspective(glm::radians(Zoom), (float)windowSize.x / (float)windowSize.y, 0.1f, 1000.0f);
+  [[nodiscard]] glm::mat4 getProjection() const {
+	return glm::perspective(glm::radians(Zoom), (float)windowSize.x / (float)windowSize.y, 0.1f, 1000.0f);
   }
-
+  glm::mat4 getMVP() {
+    return getProjection() * GetViewMatrix() * model;
+  }
  private:
   // calculates the front vector from the Camera's (updated) Euler Angles
   void updateCameraVectors() {
