@@ -175,6 +175,12 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({-36, 0, -4.5}, {-36, 2, -4.5}, {-36, 2, 0}, {-36, 0, 0}));      //wall 4
   planes.push_back(new Plane({-36, 0, 0}, {-36, 2, 0}, {-30, 2, 0}, {-30, 0, 0}));            //wall 5
 
+  //map walls
+  planes.push_back(new Plane({6, 0, 6}, {6, 2, 6}, {6, 2, -17.5}, {6, 0, -17.5}));                //wall right
+  planes.push_back(new Plane({6, 0, 6}, {6, 2, 6}, {-42.5, 2, 6}, {-42.5, 0, 6}));                //wall bottom
+  planes.push_back(new Plane({-42.5, 0, 6}, {-42.5, 2, 6}, {-42.5, 2, -17.5}, {-42.5, 0, -17.5}));//wall left
+  planes.push_back(new Plane({-42.5, 0, -17.5}, {-42.5, 2, -17.5}, {6, 2, -17.5}, {6, 0, -17.5}));//wall top
+
   for (auto &plain : planes) {
 	plain->compile();
   }
