@@ -153,6 +153,13 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({-8, 0, -10.5}, {-8, 2, -10.5}, {-14, 2, -10.5}, {-14, 0, -10.5}));  //wall 15
 
   // inner room 3
+  planes.push_back(new Plane({-18, 0, 0}, {-18, 2, 0}, {-18, 2, -1.5}, {-18, 0, -1.5}));//wall 1
+  planes.push_back(new Plane({-18, 0, -1.5}, {-18, 2, -1.5}, {-24, 2, -1.5}, {-24, 0, -1.5}));//wall 2
+  planes.push_back(new Plane({-24, 0, -1.5}, {-24, 2, -1.5}, {-24, 2, -3}, {-24, 0, -3}));//wall 3
+  planes.push_back(new Plane({-24, 0, -3}, {-24, 2, -3}, {-28, 2, -0.5}, {-28, 0, -0.5}));//wall 4
+  planes.push_back(new Plane({-28, 0, -0.5}, {-28, 2, -0.5}, {-28, 2, 0}, {-28, 0, 0}));//wall 5
+  planes.push_back(new Plane({-28, 0, 0}, {-28, 2, 0}, {-18, 2, 0}, {-18, 0, 0}));//wall 5
+
   for (auto &plain : planes) {
 	plain->compile();
   }
