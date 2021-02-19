@@ -181,6 +181,9 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({-42.5, 0, 6}, {-42.5, 2, 6}, {-42.5, 2, -17.5}, {-42.5, 0, -17.5}));//wall left
   planes.push_back(new Plane({-42.5, 0, -17.5}, {-42.5, 2, -17.5}, {6, 2, -17.5}, {6, 0, -17.5}));//wall top
 
+  //floor
+  planes.push_back(new Plane({6, 0, 6}, {6, 0, -17.5},  {-42.5, 0, -17.5},{-42.5, 0, 6}));
+
   for (auto &plain : planes) {
 	plain->compile();
   }
