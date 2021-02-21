@@ -185,10 +185,10 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({6, 0, 6}, {6, 0, -17.5}, {-42.5, 0, -17.5}, {-42.5, 0, 6}));
 
   //texts
-  planes.push_back(new Plane({-4, 1.5, 5.99}, {-4, 0.5, 5.99},{-3, 0.5, 5.99}, {-3, 1.5, 5.99}));
+  planes.push_back(new Plane({-4, 1.5, 5.99}, {-4, 0.5, 5.99}, {-3, 0.5, 5.99}, {-3, 1.5, 5.99}));
   planes.back()->addTexture("textures/text.bmp");
-  planes.push_back(new Plane( {-6, 0.5, -17.499},{-6, 1.5, -17.499}, {-5, 1.5, -17.499},{-5, 0.5, -17.499}));
-  planes.back()->addTexture("textures/text.bmp")->setOrigin({-5.5,1,-17.499})->setRotation({0,0,180});
+  planes.push_back(new Plane({-6, 0.5, -17.499}, {-6, 1.5, -17.499}, {-5, 1.5, -17.499}, {-5, 0.5, -17.499}));
+  planes.back()->addTexture("textures/text.bmp")->setOrigin({-5.5, 1, -17.499})->setRotation({0, 0, 180});
 
   //crates
   meshes.push_back(new Mesh("resources/models/Crate1.obj"));
@@ -219,6 +219,18 @@ int main(int argc, char *argv[]) {
   meshes.push_back(new Mesh(meshes[meshes.size() - 4]->loadedOBJ));
   meshes.back()->setTextures(meshes[meshes.size() - 2]->getTextures())->setScale({0.5, 1, 0.5})->setPosition({-41.7, 0, 5.2});
 
+  meshes.push_back(new Mesh("resources/models/StreetLamp.obj"));
+  meshes.back()->setPosition({-18, -0.001, 5.3})->setScale({0.15, 0.15, 0.15});
+  meshes.push_back(new Mesh("resources/models/StreetLamp.obj"));
+  meshes.back()->setPosition({-42, -0.001, -8})->setScale({0.15, 0.15, 0.15})->setOrigin({-42, -0.001, -8})->setRotation({0,90,0});
+  meshes.push_back(new Mesh("resources/models/bench.blend"));
+  meshes.back()->setRotation({270,0,180})->setPosition({-16.8,0.3,5.2})->setOrigin({-16.8,0.3,5.2});
+  meshes.push_back(new Mesh(meshes.back()->loadedOBJ));
+  meshes.back()->setRotation({270,0,90})->setPosition({-41.5, 0.3, -9.4})->setOrigin({-41.5, 0.3, -9.4});
+  meshes.push_back(new Mesh("resources/models/Fan.fbx"));
+  meshes.back()->setScale({0.035,0.035,0.035})->setRotation({0,0,0})->setPosition({-5, 2, -4})->setOrigin({-5, 2, -4});
+  meshes.push_back(new Mesh("resources/models/Fan.fbx"));
+  meshes.back()->setScale({0.035,0.035,0.035})->setRotation({0,0,0})->setPosition({-28, 2, -5})->setOrigin({-28, 2, -5});
   for (auto &plain : planes) {
 	plain->compile();
   }
@@ -244,6 +256,8 @@ int main(int argc, char *argv[]) {
 	  // TODO: Put the thread to sleep, yield, or simply do nothing
 	}
 	lasttime += 1.0 / 60;
+	meshes[meshes.size()-1]->setRotation(meshes[meshes.size()-1]->rotation+glm::vec3(0,2,0));
+	meshes[meshes.size()-2]->setRotation(meshes[meshes.size()-1]->rotation+glm::vec3(0,1,0));
   }
   glfwTerminate();
   exit(EXIT_SUCCESS);
