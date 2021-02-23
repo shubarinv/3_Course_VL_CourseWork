@@ -43,7 +43,7 @@ class Plane {
   bool texCoordsIgnoreScale = false;
 
  public:
-  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale, bool _texCoordsIgnoreScale=false) {
+  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale, bool _texCoordsIgnoreScale = false) {
 	coordinates = vec3ArrayToFloatArray({a1, a2, b1, b1, b2, a1});
 
 	vao = new VertexArray;
@@ -52,13 +52,34 @@ class Plane {
 	texCoordsIgnoreScale = _texCoordsIgnoreScale;
   }
   Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2) {
-    coordinates = vec3ArrayToFloatArray({a1, a2, b1, b1, b2, a1});
-    vao = new VertexArray;
-    model = glm::mat4(1.f);
-    setScale({1,1,1});
-    texCoordsIgnoreScale = true;
+	coordinates = vec3ArrayToFloatArray({a1, a2, b1, b1, b2, a1});
+	vao = new VertexArray;
+	model = glm::mat4(1.f);
+	setScale({1, 1, 1});
+/*
+	if (a1.x == a2.x && a1.z == a2.z && b1.x == b2.x && b1.z == b2.z) {
+	  texCoordsIgnoreScale = true;
+	  if (a1.x > b1.x) {
+		texScale.x = abs(abs(a1.x) - abs(b1.x));
+	  } else if (a1.x < b1.x) {
+		texScale.x =  abs(abs(b1.x) - abs(a1.x));
+	  } else {
+		texScale.x = 1;
+	  }
+	  if (a1.z > b1.z) {
+		texScale.y =  abs(abs(a1.z) - abs(b1.z));
+	  } else if (a1.z < b1.z) {
+		texScale.y =  abs(abs(b1.z) - abs(a1.z));
+	  } else {
+		texScale.y = 1;
+	  }
+	} else {
+	  texCoordsIgnoreScale = false;
+	}
+	LOG(INFO) << "TexScale:("<<(a1.x == a2.x && a1.z == a2.z && b1.x == b2.x && b1.z == b2.z)<<") x: " << texScale.x<<" y:"<<texScale.y;*/
   }
-  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale , glm::vec2 _texScale) {
+
+  Plane(glm::vec3 a1, glm::vec3 a2, glm::vec3 b1, glm::vec3 b2, glm::vec3 scale, glm::vec2 _texScale) {
 	coordinates = vec3ArrayToFloatArray({a1, a2, b1, b1, b2, a1});
 
 	vao = new VertexArray;
@@ -74,7 +95,7 @@ class Plane {
 	}
 	addNewBuffer(VertexBuffer(coordinates));// Setting VBO
 	generateNormals();
-	if(textures.size()==0){
+	if (textures.size() == 0) {
 	  addTexture("textures/noTexture.png");
 	}
 	fillVAO();
@@ -88,8 +109,8 @@ class Plane {
 		textures[i]->bind(i);
 	  }
 	}
-    shader->bind();
-    shader->setUniformMat4f("model", model);
+	shader->bind();
+	shader->setUniformMat4f("model", model);
 	Renderer::draw(vao, shader, coordinates.size() / 3, GL_TRIANGLES);
 	return this;
   }
@@ -134,6 +155,7 @@ class Plane {
 	addNewBuffer(TextureBuffer(textureCoords), true);
 	return this;
   }
+
  private:
   Plane *addNewBuffer(Buffer _buffer, bool bReplace = false) {
 	bool wasReplaced = false;
@@ -232,11 +254,21 @@ class Plane {
 
   Plane *setTextures(std::vector<Texture *> _textures) {
 	textures = std::move(_textures);
-	if (!wasBufferDefined(Buffer::TEXTURE_COORDS)) {
-	  LOG_S(INFO) << "Generating textureCoords";
-	  auto texCoords = Texture::generateTextureCoords(coordinates.size() / 3);
-	  addNewBuffer(TextureBuffer(texCoords));
-	}
+    if (!wasBufferDefined(Buffer::TEXTURE_COORDS)) {
+      LOG_S(INFO) << "Generating textureCoords";
+      if (texCoordsIgnoreScale) {
+        auto texCoords = Texture::generateTextureCoords(coordinates.size() / 3, texScale);
+        addNewBuffer(TextureBuffer(texCoords));
+      } else {
+        auto texCoords = Texture::generateTextureCoords(coordinates.size() / 3, {scale.x / 2, scale.z / 2});
+        addNewBuffer(TextureBuffer(texCoords));
+      }
+    }
+	return this;
+  }
+  Plane* setTexScale(glm::vec2 _texScale){
+	texScale=_texScale;
+	texCoordsIgnoreScale=true;
 	return this;
   }
 };
