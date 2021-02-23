@@ -124,29 +124,29 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({0, 0, 0}, {0, 2, 0}, {0, 2, -1}, {0, 0, -1}));//wall 1
   planes.back()->setTexScale({1,0.5})->addTexture("textures/vol3-brick-01-norm.jpg");
   planes.push_back(new Plane({0, 0, -1}, {0, 2, -1}, {-2, 2, -1}, {-2, 0, -1}));//wall 2
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,1})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-2, 0, -1}, {-2, 2, -1}, {-2, 2, -9}, {-2, 0, -9}));//wall 3
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,3})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-2, 0, -9}, {-2, 2, -9}, {0, 2, -9}, {0, 0, -9}));//wall 4
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,1})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({0, 0, -9}, {0, 2, -9}, {0, 2, -10.5}, {0, 0, -10.5}));//wall 5
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,0.5})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({0, 0, -10.5}, {0, 2, -10.5}, {-6, 2, -10.5}, {-6, 0, -10.5}));//wall 6
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,2})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-6, 0, -10.5}, {-6, 2, -10.5}, {-6, 2, -7}, {-6, 0, -7}));//wall 7
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,1})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-6, 0, -7}, {-6, 2, -7}, {-10, 2, -7}, {-10, 0, -7}));//wall 8
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,1})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-10, 0, -7}, {-10, 2, -7}, {-10, 2, -4}, {-10, 0, -4}));//wall 9
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,1})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-10, 0, -4}, {-10, 2, -4}, {-16, 2, -4}, {-16, 0, -4}));//wall 10
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,2})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-16, 0, -4}, {-16, 2, -4}, {-16, 2, 0}, {-16, 0, 0}));//wall 11
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,1})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-16, 0, 0}, {-16, 2, 0}, {-6, 2, 0}, {-6, 0, 0}));//wall 12
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,3})->setTextures(planes[planes.size() - 2]->getTextures());
   planes.push_back(new Plane({-4.5, 0, 0}, {-4.5, 2, 0}, {0, 2, 0}, {0, 0, 0}));//wall 13
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
+  planes.back()->setTexScale({1,2})->setTextures(planes[planes.size() - 2]->getTextures());
   // inner room 2
   planes.push_back(new Plane({-8, 0, -10.5}, {-8, 2, -10.5}, {-8, 2, -9}, {-8, 0, -9}));//wall 1
   planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
@@ -218,7 +218,6 @@ int main(int argc, char *argv[]) {
   planes.push_back(new Plane({-36, 0, 0}, {-36, 2, 0}, {-30, 2, 0}, {-30, 0, 0}));//wall 5
   planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
 
-  planes.back()->setTextures(planes[planes.size() - 2]->getTextures());
   //map walls
   planes.push_back(new Plane({6, 0, 6}, {6, 2, 6}, {6, 2, -17.5}, {6, 0, -17.5}));//wall right
   planes.back()->setTexScale({1,5.75})->setTextures(planes[planes.size() - 2]->getTextures());
