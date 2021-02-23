@@ -234,9 +234,9 @@ int main(int argc, char *argv[]) {
 
   //texts
   planes.push_back(new Plane({-4, 1.5, 5.99}, {-4, 0.5, 5.99}, {-3, 0.5, 5.99}, {-3, 1.5, 5.99}));
-  planes.back()->addTexture("textures/text.bmp");
+  planes.back()->setTexScale({1,1})->addTexture("textures/text.bmp");
   planes.push_back(new Plane({-6, 0.5, -17.499}, {-6, 1.5, -17.499}, {-5, 1.5, -17.499}, {-5, 0.5, -17.499}));
-  planes.back()->addTexture("textures/text.bmp")->setOrigin({-5.5, 1, -17.499})->setRotation({0, 0, 180});
+  planes.back()->setTexScale({1,1})->addTexture("textures/text.bmp")->setOrigin({-5.5, 1, -17.499})->setRotation({0, 0, 180});
 
   //crates
   meshes.push_back(new Mesh("resources/models/Crate1.obj"));
