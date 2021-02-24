@@ -273,9 +273,9 @@ int main(int argc, char *argv[]) {
   meshes.push_back(new Mesh("resources/models/StreetLamp.obj"));
   meshes.back()->setPosition({-42, -0.001, -8})->setScale({0.15, 0.15, 0.15})->setOrigin({-42, -0.001, -8})->setRotation({0, 90, 0});
   meshes.push_back(new Mesh("resources/models/bench.blend"));
-  meshes.back()->setRotation({270, 0, 180})->setPosition({-16.8, 0.3, 5.2})->setOrigin({-16.8, 0.3, 5.2});
+  meshes.back()->setRotation({270, 0, 180})->setPosition({-16.8, 0.3, 5.2})->setOrigin({-16.8, 0.3, 5.2})->setTextures({})->addTexture("textures/bench.png");
   meshes.push_back(new Mesh(meshes.back()->loadedOBJ));
-  meshes.back()->setRotation({270, 0, 90})->setPosition({-41.5, 0.3, -9.4})->setOrigin({-41.5, 0.3, -9.4});
+  meshes.back()->setRotation({270, 0, 90})->setPosition({-41.5, 0.3, -9.4})->setOrigin({-41.5, 0.3, -9.4})->setTextures({})->addTexture("textures/bench.png");
   meshes.push_back(new Mesh("resources/models/Fan.fbx"));
   meshes.back()->setScale({0.035, 0.035, 0.035})->setRotation({0, 0, 0})->setPosition({-5, 2, -4})->setOrigin({-5, 2, -4})->addTexture("textures/metal.bmp");
   meshes.push_back(new Mesh("resources/models/Fan.fbx"));
