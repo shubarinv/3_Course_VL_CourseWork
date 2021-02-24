@@ -17,6 +17,7 @@ private:
 
 public:
     explicit Texture(std::string _filepath) {
+	  filepath = _filepath;
         glGenTextures(1, &rendererID);
         glBindTexture(GL_TEXTURE_2D, rendererID);
 // set the texture wrapping/filtering options (on the currently bound texture object)

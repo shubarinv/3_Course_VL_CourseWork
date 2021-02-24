@@ -231,6 +231,7 @@ int main(int argc, char *argv[]) {
 
   //floor
   planes.push_back(new Plane({6, 0, 6}, {6, 0, -17.5}, {-42.5, 0, -17.5}, {-42.5, 0, 6}));
+  planes.back()->setTexScale({10,5})->addTexture("textures/marbletiles-1.jpg");
 
   //texts
   planes.push_back(new Plane({-4, 1.5, 5.99}, {-4, 0.5, 5.99}, {-3, 0.5, 5.99}, {-3, 1.5, 5.99}));
