@@ -277,9 +277,9 @@ int main(int argc, char *argv[]) {
   meshes.push_back(new Mesh(meshes.back()->loadedOBJ));
   meshes.back()->setRotation({270, 0, 90})->setPosition({-41.5, 0.3, -9.4})->setOrigin({-41.5, 0.3, -9.4});
   meshes.push_back(new Mesh("resources/models/Fan.fbx"));
-  meshes.back()->setScale({0.035, 0.035, 0.035})->setRotation({0, 0, 0})->setPosition({-5, 2, -4})->setOrigin({-5, 2, -4});
+  meshes.back()->setScale({0.035, 0.035, 0.035})->setRotation({0, 0, 0})->setPosition({-5, 2, -4})->setOrigin({-5, 2, -4})->addTexture("textures/metal.bmp");
   meshes.push_back(new Mesh("resources/models/Fan.fbx"));
-  meshes.back()->setScale({0.035, 0.035, 0.035})->setRotation({0, 0, 0})->setPosition({-28, 2, -5})->setOrigin({-28, 2, -5});
+  meshes.back()->setScale({0.035, 0.035, 0.035})->setRotation({0, 0, 0})->setPosition({-28, 2, -5})->setOrigin({-28, 2, -5})->addTexture("textures/metal.bmp");
   for (auto &plain : planes) {
 	plain->compile();
   }
